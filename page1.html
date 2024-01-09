@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>My Recipe Diary</title>
+    <style>
+      body {
+        font-family: "Arial", sans-serif;
+        background-color: #edd2b1;
+        margin: 0;
+        padding: 0;
+      }
+
+      p {
+        color: #0056b3;
+        background-color: rgb(216, 235, 251);
+        padding: 5px;
+      }
+
+      .container {
+        max-width: 600px;
+        margin: 20px auto;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+
+      form {
+        display: flex;
+        flex-direction: column;
+      }
+
+      label {
+        margin-top: 10px;
+      }
+
+      input,
+      select {
+        margin-bottom: 10px;
+        padding: 8px;
+      }
+
+      button {
+        padding: 10px;
+        background-color: rgb(42, 115, 224);
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background-color: #0056b3;
+      }
+
+      .recipe-card {
+        margin-top: 20px;
+        border: 1px solid #ddd;
+        padding: 10px;
+        border-radius: 4px;
+        background-color: #f9f9f9;
+        position: relative;
+      }
+
+      .recipe-card img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 4px;
+      }
+
+      .delete-btn {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background-color: #f04b5c;
+        color: #fff;
+        border: none;
+        padding: 5px 10px;
+        cursor: pointer;
+        border-radius: 4px;
+      }
+
+      .delete-btn:hover {
+        background-color: #bd2130;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <p class="link">
+        to go back to find and search random recipes
+        <a href="index.html">click here</a>
+      </p>
+      <h1>Welcome to your Recipe Diary!</h1>
+      <form id="recipeForm">
+        <label for="recipeName">Recipe Name:</label>
+        <input type="text" id="recipeName" required />
+
+        <label for="imageUrl">Image URL:</label>
+        <input type="url" id="imageUrl" placeholder="Enter Image URL" />
+
+        <label for="imageFile">Choose Image File:</label>
+        <input type="file" id="imageFile" />
+
+        <label for="link">Link (optional):</label>
+        <input type="url" id="link" />
+
+        <button type="button" onclick="addRecipe()">Add Recipe</button>
+      </form>
+
+      <div id="recipeList"></div>
+    </div>
+
+    <!-- <script src="page1.js"></script> -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        loadRecipes();
+      });
+
+      function addRecipe() {
+        const recipeName = document.getElementById("recipeName").value;
+        const imageUrl = document.getElementById("imageUrl").value;
+        const imageFile = document.getElementById("imageFile").files[0];
+        const link = document.getElementById("link").value;
+
+        if (!recipeName || (!imageUrl && !imageFile)) {
+          alert("Recipe name and image are mandatory!");
+          return;
+        }
+
+        let recipeImage;
+
+        if (imageFile) {
+          recipeImage = URL.createObjectURL(imageFile);
+        } else {
+          recipeImage = imageUrl;
+        }
+
+        const recipe = {
+          name: recipeName,
+          image: recipeImage,
+          link: link || null,
+        };
+
+        saveRecipe(recipe);
+        loadRecipes();
+        clearForm();
+      }
+
+      function saveRecipe(recipe) {
+        let recipes = JSON.parse(localStorage.getItem("recipes")) || [];
+        recipes.push(recipe);
+        localStorage.setItem("recipes", JSON.stringify(recipes));
+      }
+
+      function loadRecipes() {
+        const recipeList = document.getElementById("recipeList");
+        recipeList.innerHTML = "";
+
+        const recipes = JSON.parse(localStorage.getItem("recipes")) || [];
+
+        recipes.forEach((recipe, index) => {
+          const recipeCard = document.createElement("div");
+          recipeCard.classList.add("recipe-card");
+
+          const deleteBtn = document.createElement("button");
+          deleteBtn.classList.add("delete-btn");
+          deleteBtn.textContent = "Delete";
+          deleteBtn.onclick = () => deleteRecipe(index);
+
+          const image = document.createElement("img");
+          image.src = recipe.image;
+
+          const name = document.createElement("h3");
+          name.textContent = recipe.name;
+
+          const link = document.createElement("a");
+          if (recipe.link) {
+            link.href = recipe.link;
+            link.textContent = "Recipe Link";
+            link.target = "_blank";
+          }
+
+          recipeCard.appendChild(deleteBtn);
+          recipeCard.appendChild(image);
+          recipeCard.appendChild(name);
+          if (recipe.link) {
+            recipeCard.appendChild(link);
+          }
+
+          recipeList.appendChild(recipeCard);
+        });
+      }
+
+      function deleteRecipe(index) {
+        let recipes = JSON.parse(localStorage.getItem("recipes")) || [];
+        recipes.splice(index, 1);
+        localStorage.setItem("recipes", JSON.stringify(recipes));
+        loadRecipes();
+      }
+
+      function clearForm() {
+        document.getElementById("recipeForm").reset();
+      }
+    </script>
+  </body>
+</html>

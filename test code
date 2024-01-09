@@ -1,0 +1,135 @@
+script
+function displayRecipes() {
+  var recipeContainer = document.getElementById("recipeContainer");
+  recipeContainer.innerHTML = "";
+
+  var recipes = JSON.parse(localStorage.getItem("recipes")) || [];
+
+  recipes.forEach(function (recipe, index) {
+    var recipeDiv = document.createElement("div");
+    recipeDiv.className = "recipe";
+
+    // Add a delete button
+    var deleteButton = document.createElement("button");
+    deleteButton.className = "delete-button";
+    deleteButton.textContent = "Delete Recipe";
+    deleteButton.onclick = function () {
+      deleteRecipe(index);
+    };
+    recipeDiv.appendChild(deleteButton);
+
+    var img = document.createElement("img");
+    img.src = recipe.image;
+    img.alt = recipe.name;
+    // Set the maximum width of the images to 100% and a specific height (e.g., 200px)
+    img.style.maxWidth = "100%";
+    img.style.height = "150px";
+
+    recipeDiv.appendChild(img);
+
+    var name = document.createElement("h2");
+    name.textContent = recipe.name;
+    recipeDiv.appendChild(name);
+
+    var link = document.createElement("a");
+    link.href = recipe.link;
+    link.textContent = "Recipe Link";
+    recipeDiv.appendChild(link);
+
+    recipeContainer.appendChild(recipeDiv);
+  });
+}
+
+// Add a new function to delete a recipe
+function deleteRecipe(index) {
+  var recipes = JSON.parse(localStorage.getItem("recipes")) || [];
+
+  // Remove the recipe at the specified index
+  recipes.splice(index, 1);
+
+  // Save the updated array back to local storage
+  localStorage.setItem("recipes", JSON.stringify(recipes));
+
+  // Refresh the displayed recipes
+  displayRecipes();
+}
+
+// Add a new function to toggle between image URL and image file sections
+function toggleImageSource() {
+  var imageChoice = document.getElementById("imageChoice").value;
+  var imageUrlSection = document.getElementById("imageUrlSection");
+  var imageFileSection = document.getElementById("imageFileSection");
+
+  if (imageChoice === "url") {
+    imageUrlSection.style.display = "block";
+    imageFileSection.style.display = "none";
+  } else if (imageChoice === "file") {
+    imageUrlSection.style.display = "none";
+    imageFileSection.style.display = "block";
+  }
+}
+
+// Modify the addRecipe function to refresh the displayed recipes after adding
+function addRecipe() {
+  var recipeName = document.getElementById("recipeName").value;
+  var imageChoice = document.getElementById("imageChoice").value;
+  var recipeImage;
+
+  if (!recipeName) {
+    alert("Please enter a recipe name.");
+    return;
+  }
+
+  if (imageChoice === "url") {
+    recipeImage = document.getElementById("recipeImageUrl").value;
+
+    if (!recipeImage) {
+      alert("Please enter a recipe image URL.");
+      return;
+    }
+  } else if (imageChoice === "file") {
+    var recipeImageInput = document.getElementById("recipeImageFile");
+
+    if (!recipeImageInput.files || recipeImageInput.files.length === 0) {
+      alert("Please select a recipe image.");
+      return;
+    }
+
+    var recipeImageFile = recipeImageInput.files[0];
+
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      recipeImage = e.target.result;
+
+      var recipe = {
+        name: recipeName,
+        image: recipeImage,
+        link: document.getElementById("recipeLink").value,
+      };
+
+      var recipes = JSON.parse(localStorage.getItem("recipes")) || [];
+      recipes.push(recipe);
+      localStorage.setItem("recipes", JSON.stringify(recipes));
+
+      document.getElementById("recipeForm").reset();
+      displayRecipes();
+    };
+
+    reader.readAsDataURL(recipeImageFile);
+  }
+
+  if (imageChoice === "url") {
+    var recipe = {
+      name: recipeName,
+      image: recipeImage,
+      link: document.getElementById("recipeLink").value,
+    };
+
+    var recipes = JSON.parse(localStorage.getItem("recipes")) || [];
+    recipes.push(recipe);
+    localStorage.setItem("recipes", JSON.stringify(recipes));
+
+    document.getElementById("recipeForm").reset();
+    displayRecipes();
+  }
+}
